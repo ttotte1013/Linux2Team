@@ -1,3 +1,5 @@
+// F_quizmain.html은 예시데이터 기준이고, 실제 데이터를 입력받고 나서 F_quizmain.html 파일의 script부분에 덮어쓰기하면 됩니다!
+
 <script>
     let isAnswered = false;
     let currentQuizData = null; // 서버에서 받아온 데이터를 저장할 변수
