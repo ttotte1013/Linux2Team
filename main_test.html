@@ -3,79 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOEIC Word Quiz</title>
+    <title>TOEIC WORD QUIZ</title>
     <style>
-        /* 1. 전체 기본 세팅 (눈이 편한 고딕체와 연한 회색 배경) */
+        /* Base Reset & Layout */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-            background-color: #f8fafc; /* 완전 생하얀색(#fff) 대신 약간 푸른빛 도는 고급진 하얀색 */
-            color: #1e293b; /* 눈이 아프지 않은 다크 그레이 텍스트 */
-            
-            /* 화면 정중앙 정렬을 위한 마법의 Flex 설정 */
+            background-color: #faf8f5; 
+            color: #2c3a1a; 
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
 
-        /* 2. 중앙 퀴즈 박스  */
+        /* Main Container */
         .main-container {
             text-align: center;
             background-color: #ffffff;
-            padding: 40px 60px;
-            border-radius: 12px;
-            /* 은은한 그림자 */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.03);
-            max-width: 500px;
-            width: 100%;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            width: 420px;
+            box-sizing: border-box;
         }
 
-        /* 3. 타이틀 폰트 세팅 */
+        /* Typography */
         h1 {
             font-size: 28px;
             font-weight: 800;
-            color: #0f172a; /* 가장 진한 네이비 블랙 */
-            letter-spacing: -0.03em; /* 자간을 살짝 줄여서 세련되게 */
+            color: #004732; 
+            letter-spacing: -0.03em;
             margin-bottom: 8px;
         }
 
         .subtitle {
             font-size: 15px;
-            color: #64748b; /* 차분한 회색 서브 타이틀 */
+            color: #466255; 
             margin-bottom: 32px;
         }
 
-        /* 4. 버튼들을 감싸는 박스 (세로 정렬) */
+        /* Component: Button Group */
         .button-group {
             display: flex;
             flex-direction: column;
-            gap: 12px; /* 버튼 사이의 칼같은 간격 */
+            gap: 12px;
         }
 
-        /* 5. 버튼  */
+        /* Component: Level Selection Button */
         .btn-level {
             background-color: #ffffff;
-            color: #334155;
-            border: 1px solid #e2e8f0; /* 부드러운 테두리 */
-            padding: 16px 24px;
+            color: #2c3a1a;
+            border: 1px solid #e2ebda; 
+            padding: 18px 24px; 
             font-size: 16px;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            text-align: left; /* 버튼 글자 왼쪽 정렬 */
-            
-            /* 부드러운 애니메이션 효과 */
+            text-align: left;
             transition: all 0.2s ease-in-out; 
         }
 
-        /* 마우스를 올렸을 때(:hover)의 미세한 변화 효과 */
+        /* Button Hover Interaction */
         .btn-level:hover {
-            background-color: #f1f5f9; /* 살짝 회색빛으로 변경 */
-            border-color: #94a3b8; /* 테두리는 조금 더 진하게 */
-            color: #0f172a;
-            transform: translateY(-1px); /* 아주 미세하게 1px 위로 들림 */
+            background-color: #edf5ed;
+            border-color: #a7bfa4;
+            color: #004732;
+            transform: translateY(-2px); 
         }
     </style>
 </head>
