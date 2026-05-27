@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TOEIC WORD QUIZ - QUIZ</title>
+    <style>
+        body {
+            background-color: #faf8f5; 
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            width: 420px;
+            position: relative;
+        }
+
+        .quiz-progress {
+            font-size: 14px;
+            color: #466255; 
+            font-weight: 700;
+            text-align: left;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .quiz-question {
+            color: #004732; 
+            font-size: 32px; 
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 36px;
+            word-wrap: break-word;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-option {
+            background-color: #ffffff;
+            border: 1px solid #e2ebda;
+            padding: 16px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 16px;
+            color: #2c3a1a; 
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-option:hover {
+            background-color: #edf5ed;
+            border-color: #a7bfa4;
+            transform: translateY(-2px); 
+        }
+
+        /* 💡 정답 및 예문 해설 박스 */
+        .explanation-box {
+            display: none; /* 평소에는 숨김 */
+            background-color: #faf8f5; /* 미색 배경 */
+            border-left: 4px solid #004732; /* 그린 포인트 선 */
+            padding: 16px;
+            border-radius: 4px 12px 12px 4px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .explanation-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        /* 정답/오답 텍스트 컬러 분기 */
+        .status-correct { color: #004732; }
+        .status-wrong { color: #b91c1c; } /* 오답 메시지: 다크 레드 */
+
+        .explanation-example {
+            font-size: 14px;
+            color: #466255;
+            line-height: 1.5;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #e2ebda;
+        }
+
+        .quiz-footer {
+            display: flex;
+            justify-content: flex-end; 
+        }
+
+        .btn-next {
+            background-color: #004732; 
+            color: #ffffff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-next:hover {
+            background-color: #0b3c2a;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-container">
+        <div id="progress" class="quiz-progress">QUIZ 01 / 10</div>
+        <div id="question" class="quiz-question">Loading...</div>
+
+        <div id="options" class="options-group">
+            </div>
+
+        <div id="explanation" class="explanation-box">
+            <div id="exp-title" class="explanation-title"></div>
+            <div id="exp-text"></div>
+            <div id="exp-example" class="explanation-example"></div>
+        </div>
+
+        <div class="quiz-footer">
+            <button id="next-btn" class="btn-next">NEXT →</button>
+        </div>
+    </div>
+
+    <script>
+        // 백엔드에서 예문(example)과 예문해석(example_ko)까지 포함해 넘겨줄 정석 데이터 포맷
+        const mockData = {
+            quiz_id: 3,
+            current_num: 1,
+            total_num: 10,
+            question: "considerable",
+            options: ["사려 깊은", "상당한", "고려해 볼 만한", "보수적인"],
+            answer: 2,
+            example: "The project will require a considerable amount of time.",
+            example_ko: "그 프로젝트는 상당한 양의 시간을 필요로 할 것이다."
+        };
+
+        let isAnswered = false; // 중복 클릭 방지 플래그
+
+        function loadQuiz(data) {
+            isAnswered = false;
+            document.getElementById("explanation").style.display = "none"; // 해설 박스 초기화
+            
+            document.getElementById("progress").innerText = `QUIZ ${String(data.current_num).padStart(2, '0')} / ${data.total_num}`;
+            document.getElementById("question").innerText = data.question;
+            
+            const optionsGroup = document.getElementById("options");
+            optionsGroup.innerHTML = ""; 
+
+            data.options.forEach((optionText, index) => {
+                const button = document.createElement("button");
+                button.className = "btn-option";
+                button.innerText = `${index + 1}. ${optionText}`;
+                
+                button.onclick = () => {
+                    if (!isAnswered) {
+                        handleOptionClick(index + 1, data);
+                    }
+                };
+
+                optionsGroup.appendChild(button);
+            });
+        }
+
+        // 💡 정답 및 오답 판별 후 해설 출력 로직
+        function handleOptionClick(selectedIndex, data) {
+            isAnswered = true;
+            const expBox = document.getElementById("explanation");
+            const expTitle = document.getElementById("exp-title");
+            const expText = document.getElementById("exp-text");
+            const expExample = document.getElementById("exp-example");
+
+            const correctAnswerText = `${data.answer}. ${data.options[data.answer - 1]}`;
+
+            if (selectedIndex === data.answer) {
+                // 정답일 때
+                expTitle.className = "explanation-title status-correct";
+                expTitle.innerText = "정답입니다!";
+            } else {
+                // 오답일 때
+                expTitle.className = "explanation-title status-wrong";
+                expTitle.innerText = "오답입니다.";
+            }
+
+            // 정답 정보 및 예문 바인딩
+            expText.innerHTML = `정답: <strong>${correctAnswerText}</strong>`;
+            expExample.innerHTML = `<strong>💡 예문 공부하기</strong><br>${data.example}<br><span style="font-size: 13px; color: #7a8b83;">${data.example_ko}</span>`;
+            
+            // 해설 박스 노출
+            expBox.style.display = "block";
+        }
+
+        window.onload = function() {
+            loadQuiz(mockData);
+        };
+    </script>
+</body>
+</html>
