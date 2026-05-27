@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC Word Quiz - Result</title>
+    <style>
+        /* Base Reset & Layout */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            background-color: #faf8f5; 
+            color: #2c3a1a; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Container Standard */
+        .result-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            width: 420px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #004732; 
+            margin-bottom: 24px;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: 800;
+            color: #004732;
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            font-size: 16px;
+            color: #466255;
+            margin-bottom: 32px;
+        }
+
+        /* Feedback Section General */
+        .feedback-box {
+            background-color: #faf8f5;
+            border-left: 4px solid #004732;
+            padding: 16px;
+            border-radius: 4px 12px 12px 4px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .feedback-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #004732;
+        }
+
+        .feedback-content {
+            font-size: 14px;
+            color: #466255;
+            line-height: 1.5;
+        }
+
+        /* Component: Navigation Buttons */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn-nav {
+            background-color: #ffffff;
+            color: #2c3a1a;
+            border: 1px solid #e2ebda; 
+            padding: 14px 20px; 
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-align: center;
+        }
+
+        .btn-nav:hover {
+            background-color: #edf5ed;
+            border-color: #a7bfa4;
+            color: #004732;
+            transform: translateY(-2px); 
+        }
+
+        /* Primary Action Button Modification */
+        .btn-primary {
+            background-color: #004732;
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0b3c2a;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="result-container">
+        <h1>퀴즈 결과</h1>
+        
+        <div id="score" class="score-display">0 / 100</div>
+        <div class="score-label">SCORE</div>
+
+        <div class="feedback-box">
+            <div class="feedback-title">단어장 추천 및 피드백</div>
+            <div id="recommendation-text" class="feedback-content">결과를 계산 중입니다.</div>
+        </div>
+
+        <div id="test-center-box" class="feedback-box" style="display: none;">
+            <div class="feedback-title">추천 토익 시험장 안내</div>
+            <div id="test-center-text" class="feedback-content"></div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-nav btn-primary" onclick="navigateTo('select_mode.html')">다른 퀴즈 방식 선택하기</button>
+            <button class="btn-nav" onclick="navigateTo('index.html')">메인 홈으로 돌아가기</button>
+        </div>
+    </div>
+
+    <script>
+        // 백엔드 통신 및 로컬 결과 수신 시뮬레이션 데이터 (맞은 개수 기준)
+        const mockResult = {
