@@ -281,67 +281,28 @@ def submit_answer():
 # ------------------------------------------------------------------
 @app.route("/result", methods=["GET"])
 def result():
-    """
-    권장 단어장 추천 로직:
-        점수 비율 ≥ 80%  → 다음 레벨 단어장 추천
-        40% < 점수 < 80% → 현재 레벨 복습 권장
-        점수 비율 ≤ 40%  → 이전 레벨 단어장 추천
-    """
-    score      = session.get("score", 0)
-    level      = session.get("level", 1)
-    wrong_ids  = session.get("wrong_ids", [])
-    total      = QUIZ_COUNT
-    ratio      = score / total        # 0.0 ~ 1.0
+    score  = session.get("score", 0)
+    level  = session.get("level", 1)
+    total  = QUIZ_COUNT
+    ratio  = score / total
 
-    # 추천 레벨 계산
     if ratio >= 0.8:
         rec_level = min(level + 1, 3)
-        feedback  = f"훌륭합니다! {score}/{total}점으로 {level}단계를 통과했어요. "
-        if level < 3:
-            feedback += f"다음 단계인 {rec_level}단계 단어장을 도전해보세요! 🎉"
-        else:
-            feedback += "최고 레벨을 마스터했습니다! 실전 토익에 도전해보세요! 🏆"
+        feedback  = f"{score}/{total}점으로 {level}단계 통과! {rec_level}단계 단어장을 도전해보세요 🎉"
     elif ratio > 0.4:
         rec_level = level
-        feedback  = (
-            f"{score}/{total}점입니다. 아직 {level}단계 단어가 완전히 익숙하지 않아요. "
-            f"현재 {level}단계 단어장을 한 번 더 복습한 후 재도전하세요! 💪"
-        )
+        feedback  = f"{score}/{total}점입니다. {level}단계 단어장을 한 번 더 복습 후 재도전하세요 💪"
     else:
         rec_level = max(level - 1, 1)
-        feedback  = (
-            f"{score}/{total}점입니다. 기초를 다질 필요가 있어요. "
-        )
-        if level > 1:
-            feedback += f"{rec_level}단계 단어장부터 다시 시작해보세요! 📖"
-        else:
-            feedback += "1단계 단어장을 충분히 익힌 후 재도전하세요! 📖"
-
-    # 토익 응시장 추천 (제안서 기능 5번)
-    test_center = _recommend_test_center()
+        feedback  = f"{score}/{total}점입니다. {rec_level}단계 단어장부터 다시 시작해보세요 📖"
 
     return render_template(
         "result.html",
-        score       = score,
-        total       = total,
-        feedback    = feedback,
-        rec_level   = rec_level,
-        wrong_count = len(wrong_ids),
-        test_center = test_center,
+        score     = score,
+        total     = total,
+        feedback  = feedback,
+        rec_level = rec_level,
     )
-
-
-def _recommend_test_center():
-    """
-    간단한 토익 응시장 안내 문자열을 반환합니다.
-    실제 서비스에서는 위치 API와 연동할 수 있습니다.
-    """
-    return (
-        "가장 가까운 토익 공식 시험장은 YBM 어학원 종로센터입니다. "
-        "공식 홈페이지(www.toeic.co.kr)에서 시험 일정과 접수를 확인하세요."
-    )
-
-
 # ------------------------------------------------------------------
 # 5. API: 레벨별 단어 목록 조회  GET /api/words?level=1
 #    (선택 사항 - 디버깅 및 팀원 C의 오답 조회에 활용 가능)
