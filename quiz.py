@@ -53,16 +53,6 @@ def index():
 # ------------------------------------------------------------------
 @app.route("/level", methods=["POST"])
 def select_level():
-    """
-    요청 JSON 예시:
-        { "level": 2, "mode": "eng_ko" }
-
-    mode 값 목록 (select_mode.html 버튼 순서와 동일):
-        "eng_ko"   : 영 → 한
-        "ko_eng"   : 한 → 영
-        "synonym"  : 영문 동의어
-        "antonym"  : 영문 반의어
-    """
     data = request.get_json()
     level = int(data.get("level", 1))
     mode  = data.get("mode", "eng_ko")
@@ -80,6 +70,7 @@ def select_level():
     session["score"]        = 0           # 맞은 개수
     session["used_ids"]     = []          # 이미 출제된 단어 id 목록
     session["wrong_ids"]    = []          # 오답 단어 id 목록 (팀원 C 사용)
+    session["is_retry_mode"] = False       # 재시험 모드 플래그 초기화
 
     return jsonify({"redirect": "/quiz"})
 
@@ -91,24 +82,10 @@ def select_level():
 # ------------------------------------------------------------------
 @app.route("/quiz", methods=["GET"])
 def get_quiz():
-    """
-    반환 JSON 규격 (팀원이 공유한 규격과 동일):
-    {
-        "quiz_id"    : 3,
-        "current_num": 1,
-        "total_num"  : 10,
-        "question"   : "considerable",
-        "options"    : ["사려 깊은", "상당한", "고려해 볼 만한", "보수적인"],
-        "answer"     : 2,
-        "example"    : "The project will require a considerable amount of time.",
-        "example_ko" : "그 프로젝트는 상당한 양의 시간이 필요할 것입니다."
-    }
-    """
-    # 세션 미존재 → 레벨 선택 화면으로
     if "level" not in session:
         return jsonify({"error": "세션 없음. /level 먼저 호출하세요."}), 400
 
-    # 만약 재시험 모드 플래그가 켜져 있다면, 밑에 채민님이 만든 재시험 출제 함수가 실행됩니다.
+    # [윤채민 구현 연동] 오답 재시험 모드일 때는 채민 전용 출제 로직으로 연결
     if session.get("is_retry_mode", False):
         return get_retry_quiz()
 
@@ -124,7 +101,6 @@ def get_quiz():
     db = get_db()
     try:
         with db.cursor() as cursor:
-            # 이미 출제된 단어 제외하고 같은 레벨에서 1개 랜덤 선택
             if used_ids:
                 placeholders = ",".join(["%s"] * len(used_ids))
                 sql = (
@@ -142,13 +118,9 @@ def get_quiz():
             row = cursor.fetchone()
 
             if not row:
-                # 해당 레벨 단어가 부족할 경우 used_ids 초기화 후 재시도
                 session["used_ids"] = []
                 return get_quiz()
 
-            # ----------------------------------------------------------
-            # 모드별 question / 정답 텍스트 / 오답 풀 결정
-            # ----------------------------------------------------------
             if mode == "eng_ko":
                 question     = row["word"]
                 correct_text = row["meaning"]
@@ -166,9 +138,6 @@ def get_quiz():
                 correct_text = row["antonym"]
                 wrong_col    = "antonym"
 
-            # ----------------------------------------------------------
-            # 오답 선지 3개 생성 (같은 레벨, 정답 단어 제외)
-            # ----------------------------------------------------------
             cursor.execute(
                 f"SELECT {wrong_col} FROM words "
                 f"WHERE level=%s AND id != %s AND {wrong_col} IS NOT NULL "
@@ -178,7 +147,6 @@ def get_quiz():
             )
             wrong_rows = cursor.fetchall()
 
-            # 오답 데이터가 부족하면 다른 레벨에서 보충
             if len(wrong_rows) < OPTIONS_COUNT - 1:
                 need = (OPTIONS_COUNT - 1) - len(wrong_rows)
                 cursor.execute(
@@ -193,27 +161,15 @@ def get_quiz():
 
             wrong_texts = [r[wrong_col] for r in wrong_rows]
 
-            # ----------------------------------------------------------
-            # 선지 조합 후 셔플 -> 정답 번호 계산
-            # ----------------------------------------------------------
             options = wrong_texts + [correct_text]
             random.shuffle(options)
-            answer_index = options.index(correct_text) + 1   # 1-based
+            answer_index = options.index(correct_text) + 1   
 
-            # ----------------------------------------------------------
-            # 예문 한글 해석: DB에 example_ko 컬럼이 없으므로
-            # example 필드에서 한글 부분을 파싱하거나 빈 문자열 반환.
-            # 현재 DB 스키마에는 example(영문)만 있으므로
-            # example_ko는 빈 문자열로 처리.
-            # (추후 A가 컬럼 추가 시 쿼리에 example_ko 추가 필요)
-            # ----------------------------------------------------------
             example_en = row["example"].strip().replace("\r", "").replace("\n", "") \
                          if row["example"] else ""
-            example_ko = ""   # DB에 컬럼 추가 전까지 빈 문자열
+            example_ko = ""   
 
-            # 세션 업데이트 (출제된 id, 현재 문제 번호는 submit에서 올림)
             session["used_ids"] = used_ids + [row["id"]]
-            # 정답 정보를 채점용으로 세션에 임시 저장
             session["current_answer"] = answer_index
             session["current_quiz_id"] = row["id"]
 
@@ -234,23 +190,9 @@ def get_quiz():
 
 # ------------------------------------------------------------------
 # 3. 정답 채점  POST /submit
-#    프론트에서 사용자가 선택한 번호를 받아 정오를 판별하고
-#    점수를 누적.
 # ------------------------------------------------------------------
 @app.route("/submit", methods=["POST"])
 def submit_answer():
-    """
-    요청 JSON:
-        { "selected": 2 }          ← 사용자가 클릭한 선지 번호 (1~4)
-
-    반환 JSON:
-        {
-            "correct"     : true,   ← 정오 여부
-            "score"       : 3,      ← 현재까지 맞은 개수
-            "current_num" : 3,      ← 방금 채점한 문제 번호
-            "is_last"     : false   ← 마지막 문제 여부
-        }
-    """
     if "level" not in session:
         return jsonify({"error": "세션 없음."}), 400
 
@@ -261,7 +203,6 @@ def submit_answer():
     if correct:
         session["score"] += 1
     else:
-        # 오답 id를 팀원 C의 오답 노트용으로 저장
         wrong_ids = session.get("wrong_ids", [])
         if session.get("current_quiz_id") not in wrong_ids:
             wrong_ids.append(session.get("current_quiz_id"))
@@ -269,7 +210,6 @@ def submit_answer():
 
     current_num          = session["current_num"]
     
-    # 일반 모드와 재시험 모드의 총 문제 수 제한 구분
     total_limit          = session["retry_total"] if session.get("is_retry_mode", False) else QUIZ_COUNT
     is_last              = (current_num >= total_limit)
     session["current_num"] = current_num + 1
@@ -284,7 +224,6 @@ def submit_answer():
 
 # ------------------------------------------------------------------
 # 4. 결과 & 권장 단어장 추천  GET /result
-#    점수 비율에 따라 다음 레벨 또는 현재 레벨 재학습을 안내.
 # ------------------------------------------------------------------
 @app.route("/result", methods=["GET"])
 def result():
@@ -308,16 +247,32 @@ def result():
         rec_level = max(level - 1, 1)
         feedback  = f"{score}/{total}점입니다. {rec_level}단계 단어장부터 다시 시작해보세요 📖"
 
+    # ==================================================================
+    # ★ 토익 고사장 및 시험 접수 링크 추천 기능
+    # 사용자가 10문제 중 8문제(80%) 이상 맞췄을 때 실전 토익 안내 링크를 제공합니다.
+    # ==================================================================
+    show_toeic_recommend = False
+    toeic_links = {}
+    if ratio >= 0.8:
+        show_toeic_recommend = True
+        toeic_links = {
+            "receipt": "https://exam.toeic.co.kr/receipt/receiptStep1.php",
+            "center": "https://exam.toeic.co.kr/receipt/centerMap.php"
+        }
+
     return render_template(
         "result.html",
         score     = score,
         total     = total,
         feedback  = feedback,
         rec_level = rec_level,
+        show_toeic_recommend = show_toeic_recommend,  # 프론트엔드로 전달
+        toeic_links = toeic_links                    # 프론트엔드로 전달
     )
+
+
 # ------------------------------------------------------------------
 # 5. API: 레벨별 단어 목록 조회  GET /api/words?level=1
-#    (선택 사항 - 디버깅 및 오답 조회에 활용 가능합니다!)
 # ------------------------------------------------------------------
 @app.route("/api/words", methods=["GET"])
 def api_words():
@@ -346,7 +301,6 @@ def api_words():
 
 @app.route("/wrongnote", methods=["GET"])
 def wrongnote():
-    # 세션에서 저장된 오답 ID 리스트를 가져옴
     wrong_ids = session.get("wrong_ids", [])
     
     if not wrong_ids:
@@ -355,7 +309,6 @@ def wrongnote():
     db = get_db()
     try:
         with db.cursor() as cursor:
-            # 저장된 오답 ID들에 해당하는 단어 정보를 한 번에 DB에서 가져옴
             placeholders = ",".join(["%s"] * len(wrong_ids))
             sql = f"SELECT id, level, word, meaning, synonym, antonym, example FROM words WHERE id IN ({placeholders})"
             cursor.execute(sql, wrong_ids)
@@ -373,13 +326,12 @@ def retry():
     if not wrong_ids:
         return jsonify({"error": "다시 풀 오답이 없습니다."}), 400
 
-    # 세션을 재시험 상태 전용으로 변경
     session["is_retry_mode"] = True
     session["retry_pool"]    = list(wrong_ids)      
-    random.shuffle(session["retry_pool"])          # 오답 문제 무작위 셔플
-    session["retry_total"]   = len(wrong_ids)       # 재시험 총 개수 설정
-    session["current_num"]   = 1                    # 번호 초기화
-    session["score"]         = 0                    # 맞은 개수 초기화
+    random.shuffle(session["retry_pool"])          
+    session["retry_total"]   = len(wrong_ids)       
+    session["current_num"]   = 1                    
+    session["score"]         = 0                    
 
     return jsonify({"redirect": "/quiz"})
 
@@ -413,7 +365,6 @@ def get_retry_quiz():
             else:
                 question, correct_text, wrong_col = row["word"], row["antonym"], "antonym"
 
-            # 보기 4개 구성을 위해 오답 선지 3개 랜덤 추출
             cursor.execute(
                 f"SELECT {wrong_col} FROM words WHERE id != %s AND {wrong_col} IS NOT NULL AND {wrong_col} != '' "
                 f"ORDER BY RAND() LIMIT %s", (row["id"], 3)
@@ -427,7 +378,6 @@ def get_retry_quiz():
 
             example_en = row["example"].strip().replace("\r", "").replace("\n", "") if row["example"] else ""
 
-            # 기존 채점 시스템과 호환 연동을 위해 세션 임시 동기화
             session["current_answer"] = answer_index
             session["current_quiz_id"] = row["id"]
 
