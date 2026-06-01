@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>퀴즈</title>
+</head>
+<body>
+
+<h2 id="question">문제 불러오는 중...</h2>
+
+<div id="options"></div>
+
+<script>
+async function loadQuiz() {
+    const res = await fetch("/quiz");
+    const data = await res.json();
+
+    if (data.redirect) {
+        location.href = data.redirect;
+        return;
+    }
+
+    document.getElementById("question").innerText =
+        `${data.current_num}. ${data.question}`;
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    data.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.innerText = `${idx + 1}. ${opt}`;
+        btn.style.display = "block";
+        btn.style.margin = "10px";
+
+        btn.onclick = async () => {
+            const result = await fetch("/submit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    selected: idx + 1
+                })
+            });
+
+            const resultData = await result.json();
+
+            if (resultData.is_last) {
+                location.href = "/result";
+            } else {
+                loadQuiz();
+            }
+        };
+
+        optionsDiv.appendChild(btn);
+    });
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>

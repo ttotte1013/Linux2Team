@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TOEIC WORD QUIZ - 모드 선택</title>
+    <style>
+        /* 상단 스타일 구역 */
+        body {
+            background-color: #faf8f5; /* 미색 */
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .main-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            width: 420px; /* 서브타이틀이 들어가서 가로 폭을 살짝 넓히기 */
+        }
+
+        h1 {
+            color: #00462a; /* 타이틀 글자색 */
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #4d6b5f; /* 서브타이틀 글자색 */
+            margin-bottom: 32px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 14px; /* 버튼 사이 간격 살짝 넓힘 */
+        }
+
+        /* 버튼 스타일 */
+        .btn-mode {
+            background-color: #ffffff;
+            border: 1px solid #e2ebda;
+            padding: 18px 24px; /* 위아래 여백을 줘서 더 풍성하게 */
+            border-radius: 12px; /* 조금 더 둥글둥글 귀엽게 */
+            cursor: pointer;
+            text-align: left;
+            
+            /* 버튼 내부 내용들을 세로로 정렬 */
+            display: flex;
+            flex-direction: column;
+            gap: 4px; /* 큰 글씨와 작은 글씨 사이의 간격 */
+            
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* 큰 글씨 (메인 타이틀) */
+        .btn-mode strong {
+            color: #4a5632;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        /* 작은 글씨 (서브 타이틀) */
+        .btn-mode span {
+            color: #5a6b51;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        /* 마우스 오버 효과 */
+        .btn-mode:hover {
+            background-color: #edf5ed;
+            border-color: #a7bfa4;
+            transform: translateY(-2px); /* 2px 들리게 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <h1>퀴즈 모드 선택</h1>
+        <p class="subtitle">원하는 시험 방식을 선택하세요.</p>
+
+        <div class="button-group">
+            <button class="btn-mode"
+             onclick="startQuiz('eng_ko')">
+                <strong>영 → 한</strong>
+                <span>영어 단어를 보고 알맞은 한글 뜻을 맞춥니다.</span>
+            </button>
+            
+            <button class="btn-mode"
+             onclick="startQuiz('ko_eng')">
+                <strong>한 → 영</strong>
+                <span>한글 뜻을 보고 올바른 스펠링의 영단어를 찾습니다.</span>
+            </button>
+            
+            <button class="btn-mode"
+             onclick="startQuiz('synonym')">
+                <strong>영문 동의어</strong>
+                <span>제시된 단어와 의미가 가장 가까운 유의어를 고릅니다.</span>
+            </button>
+            
+            <button class="btn-mode"
+            onclick="startQuiz('antonym')">
+                <strong>영문 반의어</strong>
+                <span>제시된 단어와 정반대의 뜻을 가진 단어를 찾습니다.</span>
+            </button>
+        </div>
+    </div>
+<script>
+async function startQuiz(mode) {
+
+    const level =
+        window.location.pathname.split("/").pop();
+
+    const response = await fetch("/level", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            level: level,
+            mode: mode
+        })
+    });
+
+    const data = await response.json();
+
+    if (data.redirect) {
+        location.href = "/quiz_page";
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC WORD QUIZ</title>
+
+    <style>
+        /* Base Reset & Layout */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            background-color: #faf8f5;
+            color: #2c3a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Main Container */
+        .main-container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            width: 420px;
+            box-sizing: border-box;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #004732;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #466255;
+            margin-bottom: 32px;
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Level Button */
+        .btn-level {
+            background-color: #ffffff;
+            color: #2c3a1a;
+            border: 1px solid #e2ebda;
+            padding: 18px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Hover */
+        .btn-level:hover {
+            background-color: #edf5ed;
+            border-color: #a7bfa4;
+            color: #004732;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <h1>TOEIC WORD QUIZ</h1>
+        <p class="subtitle">목표 점수를 선택하세요.</p>
+
+        <div class="button-group">
+
+            <button class="btn-level"
+                onclick="location.href='/select_level/1'">
+                입문 단계 (600점 목표)
+            </button>
+
+            <button class="btn-level"
+                onclick="location.href='/select_level/2'">
+                중급 단계 (700~800점 목표)
+            </button>
+
+            <button class="btn-level"
+                onclick="location.href='/select_level/3'">
+                실전 단계 (900점 이상 목표)
+            </button>
+
+        </div>
+    </div>
+
+</body>
+</html>

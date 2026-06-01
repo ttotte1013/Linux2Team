@@ -133,11 +133,69 @@
         </div>
 
         <div class="button-group">
-            <button class="btn-nav btn-primary" onclick="navigateTo('select_mode.html')">다른 퀴즈 방식 선택하기</button>
-            <button class="btn-nav" onclick="navigateTo('index.html')">메인 홈으로 돌아가기</button>
+            <button class="btn-nav btn-primary"
+                onclick="location.href='/'">
+                메인 홈으로 돌아가기
+            </button>
+
+            <button class="btn-nav"
+                onclick="location.href='/wrongnote'">
+                오답노트 보기
+            </button>
+</div>
+    </div>
+
+<div class="result-container">
+    <h1>퀴즈 결과</h1>
+
+    <div class="score-display">
+        {{ score }} / {{ total }}
+    </div>
+
+    <div class="score-label">SCORE</div>
+
+    <div class="feedback-box">
+        <div class="feedback-title">
+            단어장 추천 및 피드백
+        </div>
+
+        <div class="feedback-content">
+            {{ feedback }}
         </div>
     </div>
 
-    <script>
-        // 백엔드 통신 및 로컬 결과 수신 시뮬레이션 데이터 (맞은 개수 기준)
-        const mockResult = {
+    {% if show_toeic_recommend %}
+    <div class="feedback-box">
+        <div class="feedback-title">
+            추천 토익 시험 안내
+        </div>
+
+        <div class="feedback-content">
+            <a href="{{ toeic_links.receipt }}" target="_blank">
+                토익 접수하기
+            </a>
+            <br><br>
+
+            <a href="{{ toeic_links.center }}" target="_blank">
+                시험장 찾기
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="button-group">
+
+        <button class="btn-nav btn-primary"
+            onclick="location.href='/'">
+            메인 홈으로 돌아가기
+        </button>
+
+        <button class="btn-nav"
+            onclick="location.href='/wrongnote'">
+            오답노트 보기
+        </button>
+
+    </div>
+</div>
+        
+       

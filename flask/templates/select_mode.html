@@ -88,26 +88,62 @@
         <p class="subtitle">원하는 시험 방식을 선택하세요.</p>
 
         <div class="button-group">
-            <button class="btn-mode">
+            <button class="btn-mode"
+             onclick="selectMode('eng_ko')">
                 <strong>영 → 한</strong>
                 <span>영어 단어를 보고 알맞은 한글 뜻을 맞춥니다.</span>
             </button>
             
-            <button class="btn-mode">
+            <button class="btn-mode"
+             onclick="selectMode('ko_eng')">
                 <strong>한 → 영</strong>
                 <span>한글 뜻을 보고 올바른 스펠링의 영단어를 찾습니다.</span>
             </button>
             
-            <button class="btn-mode">
+            <button class="btn-mode"
+             onclick="selectMode('synonym')">
                 <strong>영문 동의어</strong>
                 <span>제시된 단어와 의미가 가장 가까운 유의어를 고릅니다.</span>
             </button>
             
-            <button class="btn-mode">
+            <button class="btn-mode"
+            onclick="selectMode('antonym')">
                 <strong>영문 반의어</strong>
                 <span>제시된 단어와 정반대의 뜻을 가진 단어를 찾습니다.</span>
             </button>
         </div>
     </div>
+<script>
+    async function selectMode(mode) {
+
+        // URL에서 레벨 가져오기
+        const pathParts = window.location.pathname.split("/");
+        const level = Number(pathParts[pathParts.length - 1]);
+
+        console.log("현재 level:", level);
+
+        const response = await fetch('/level', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                level: level,
+                mode: mode
+            })
+        });
+
+        const data = await response.json();
+
+        console.log(data);
+
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            alert(data.error || "오류 발생");
+        }
+    }
+</script>
+
 </body>
 </html>

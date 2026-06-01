@@ -6,7 +6,7 @@
 =============================================================
 """
 
-from flask import Flask, request, session, jsonify, render_template
+from flask import Flask, request, session, jsonify, render_template, redirect
 import pymysql
 import random
 
@@ -42,9 +42,38 @@ OPTIONS_COUNT = 4        # 객관식 선지 수
 #   Flask 라우트는 여기서 열기
 # ------------------------------------------------------------------
 @app.route("/")
+
 def index():
     return render_template("main.html")
 
+@app.route("/select_mode/<int:level>")
+def select_mode(level):
+
+    if level not in (1, 2, 3):
+        return "잘못된 레벨입니다.", 400
+
+    session["level"] = level
+
+    return render_template(
+        "select_mode.html",
+        level=level
+    )
+
+
+@app.route("/quiz_page")
+def quiz_page():
+    return render_template("quiz.html")
+
+@app.route("/select_level/<int:level>")
+def select_level_page(level):
+
+    if level not in (1, 2, 3):
+        return "잘못된 레벨입니다.", 400
+
+    session["level"] = level
+
+    # 모드 선택 화면으로 이동
+    return redirect(f"/select_mode/{level}")
 
 # ------------------------------------------------------------------
 # 1. 레벨 선택  POST /level
@@ -72,7 +101,7 @@ def select_level():
     session["wrong_ids"]    = []          # 오답 단어 id 목록 (팀원 C 사용)
     session["is_retry_mode"] = False       # 재시험 모드 플래그 초기화
 
-    return jsonify({"redirect": "/quiz"})
+    return jsonify({"redirect": "/quiz_page"})
 
 
 # ------------------------------------------------------------------
@@ -80,94 +109,111 @@ def select_level():
 #    세션의 level·mode를 읽어 DB에서 단어를 무작위로 꺼내
 #    4지선다 JSON을 반환.
 # ------------------------------------------------------------------
+
 @app.route("/quiz", methods=["GET"])
 def get_quiz():
+
     if "level" not in session:
         return jsonify({"error": "세션 없음. /level 먼저 호출하세요."}), 400
 
-    # [윤채민 구현 연동] 오답 재시험 모드일 때는 채민 전용 출제 로직으로 연결
+    # 오답 재시험 모드
     if session.get("is_retry_mode", False):
         return get_retry_quiz()
 
-    level       = session["level"]
-    mode        = session["mode"]
+    level = session["level"]
+    mode = session["mode"]
     current_num = session["current_num"]
-    used_ids    = session["used_ids"]
+    used_ids = session["used_ids"]
 
-    # 모든 문제를 다 풀었으면 결과 페이지로 유도
+    # 문제 다 풀었으면 결과 페이지
     if current_num > QUIZ_COUNT:
         return jsonify({"redirect": "/result"})
 
     db = get_db()
+
     try:
         with db.cursor() as cursor:
+
+            # 단어 하나 랜덤 선택
             if used_ids:
                 placeholders = ",".join(["%s"] * len(used_ids))
+
                 sql = (
                     f"SELECT id, word, meaning, synonym, antonym, example "
-                    f"FROM words WHERE level=%s AND id NOT IN ({placeholders}) "
+                    f"FROM words "
+                    f"WHERE level=%s AND id NOT IN ({placeholders}) "
                     f"ORDER BY RAND() LIMIT 1"
                 )
+
                 cursor.execute(sql, [level] + used_ids)
+
             else:
                 cursor.execute(
-                    "SELECT id, word, meaning, synonym, antonym, example "
-                    "FROM words WHERE level=%s ORDER BY RAND() LIMIT 1",
+                    """
+                    SELECT id, word, meaning, synonym, antonym, example
+                    FROM words
+                    WHERE level=%s
+                    ORDER BY RAND()
+                    LIMIT 1
+                    """,
                     (level,)
                 )
+
             row = cursor.fetchone()
 
             if not row:
                 session["used_ids"] = []
-                return get_quiz()
+                return jsonify({"error": "문제를 불러올 수 없습니다."}), 500
 
+            # 문제 유형
             if mode == "eng_ko":
-                question     = row["word"]
+                question = row["word"]
                 correct_text = row["meaning"]
-                wrong_col    = "meaning"
-            elif mode == "ko_eng":
-                question     = row["meaning"]
-                correct_text = row["word"]
-                wrong_col    = "word"
-            elif mode == "synonym":
-                question     = row["word"]
-                correct_text = row["synonym"]
-                wrong_col    = "synonym"
-            else:  # antonym
-                question     = row["word"]
-                correct_text = row["antonym"]
-                wrong_col    = "antonym"
+                wrong_col = "meaning"
 
+            elif mode == "ko_eng":
+                question = row["meaning"]
+                correct_text = row["word"]
+                wrong_col = "word"
+
+            elif mode == "synonym":
+                question = row["word"]
+                correct_text = row["synonym"]
+                wrong_col = "synonym"
+
+            else:  # antonym
+                question = row["word"]
+                correct_text = row["antonym"]
+                wrong_col = "antonym"
+
+            # 오답 선택지 생성
             cursor.execute(
-                f"SELECT {wrong_col} FROM words "
-                f"WHERE level=%s AND id != %s AND {wrong_col} IS NOT NULL "
-                f"AND {wrong_col} != '' "
-                f"ORDER BY RAND() LIMIT %s",
+                f"""
+                SELECT {wrong_col}
+                FROM words
+                WHERE level=%s
+                AND id != %s
+                AND {wrong_col} IS NOT NULL
+                AND {wrong_col} != ''
+                ORDER BY RAND()
+                LIMIT %s
+                """,
                 (level, row["id"], OPTIONS_COUNT - 1)
             )
+
             wrong_rows = cursor.fetchall()
-
-            if len(wrong_rows) < OPTIONS_COUNT - 1:
-                need = (OPTIONS_COUNT - 1) - len(wrong_rows)
-                cursor.execute(
-                    f"SELECT {wrong_col} FROM words "
-                    f"WHERE id != %s AND {wrong_col} IS NOT NULL "
-                    f"AND {wrong_col} != '' "
-                    f"ORDER BY RAND() LIMIT %s",
-                    (row["id"], need)
-                )
-                extra = cursor.fetchall()
-                wrong_rows = list(wrong_rows) + list(extra)
-
             wrong_texts = [r[wrong_col] for r in wrong_rows]
 
             options = wrong_texts + [correct_text]
             random.shuffle(options)
-            answer_index = options.index(correct_text) + 1   
 
-            example_en = row["example"].strip().replace("\r", "").replace("\n", "") \
-                         if row["example"] else ""
-            example_ko = ""   
+            answer_index = options.index(correct_text) + 1
+
+            example_en = (
+                row["example"].strip().replace("\r", "").replace("\n", "")
+                if row["example"]
+                else ""
+            )
 
             session["used_ids"] = used_ids + [row["id"]]
             session["current_answer"] = answer_index
@@ -177,16 +223,15 @@ def get_quiz():
         db.close()
 
     return jsonify({
-        "quiz_id"    : row["id"],
+        "quiz_id": row["id"],
         "current_num": current_num,
-        "total_num"  : QUIZ_COUNT,
-        "question"   : question,
-        "options"    : options,
-        "answer"     : answer_index,
-        "example"    : example_en,
-        "example_ko" : example_ko,
+        "total_num": QUIZ_COUNT,
+        "question": question,
+        "options": options,
+        "answer": answer_index,
+        "example": example_en,
+        "example_ko": ""
     })
-
 
 # ------------------------------------------------------------------
 # 3. 정답 채점  POST /submit
@@ -261,14 +306,15 @@ def result():
         }
 
     return render_template(
-        "result.html",
-        score     = score,
-        total     = total,
-        feedback  = feedback,
-        rec_level = rec_level,
-        show_toeic_recommend = show_toeic_recommend,  # 프론트엔드로 전달
-        toeic_links = toeic_links                    # 프론트엔드로 전달
-    )
+    "result.html",
+    score=score,
+    total=total,
+    feedback=feedback,
+    rec_level=rec_level,
+    level=level,
+    show_toeic_recommend=show_toeic_recommend,
+    toeic_links=toeic_links
+)
 
 
 # ------------------------------------------------------------------
@@ -333,7 +379,7 @@ def retry():
     session["current_num"]   = 1                    
     session["score"]         = 0                    
 
-    return jsonify({"redirect": "/quiz"})
+    return jsonify({"redirect": "/quiz_page"})
 
 
 def get_retry_quiz():
@@ -398,3 +444,7 @@ def get_retry_quiz():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+
+

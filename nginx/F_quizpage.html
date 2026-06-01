@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TOEIC WORD QUIZ - QUIZ</title>
+    <style>
+        body {
+            background-color: #faf8f5;
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            width: 420px;
+        }
+
+        .quiz-progress {
+            font-size: 14px;
+            color: #466255;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .quiz-question {
+            color: #004732;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-option {
+            background-color: #ffffff;
+            border: 1px solid #e2ebda;
+            padding: 16px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-option:hover {
+            background-color: #edf5ed;
+            border-color: #a7bfa4;
+            transform: translateY(-2px);
+        }
+
+        .explanation-box {
+            display: none;
+            background-color: #faf8f5;
+            border-left: 4px solid #004732;
+            padding: 16px;
+            border-radius: 4px 12px 12px 4px;
+            margin-bottom: 24px;
+        }
+
+        .status-correct {
+            color: #004732;
+            font-weight: bold;
+        }
+
+        .status-wrong {
+            color: #b91c1c;
+            font-weight: bold;
+        }
+
+        .quiz-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-next {
+            background-color: #004732;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="quiz-container">
+
+    <div id="progress" class="quiz-progress">
+        QUIZ 01 / 10
+    </div>
+
+    <div id="question" class="quiz-question">
+        Loading...
+    </div>
+
+    <div id="options" class="options-group"></div>
+
+    <div id="explanation" class="explanation-box">
+        <div id="exp-title"></div>
+        <div id="exp-answer"></div>
+        <div id="exp-example"></div>
+    </div>
+
+    <div class="quiz-footer">
+        <button id="next-btn" class="btn-next">
+            NEXT →
+        </button>
+    </div>
+
+</div>
+
+<script>
+let isAnswered = false;
+
+async function fetchQuiz() {
+    const response = await fetch("/quiz");
+    const data = await response.json();
+
+    if (data.redirect) {
+        location.href = data.redirect;
+        return;
+    }
+
+    loadQuiz(data);
+}
+
+function loadQuiz(data) {
+
+    isAnswered = false;
+
+    document.getElementById("explanation").style.display = "none";
+
+    document.getElementById("progress").innerText =
+        `QUIZ ${String(data.current_num).padStart(2,'0')} / ${data.total_num}`;
+
+    document.getElementById("question").innerText =
+        data.question;
+
+    const optionsGroup =
+        document.getElementById("options");
+
+    optionsGroup.innerHTML = "";
+
+    data.options.forEach((optionText, index) => {
+
+        const button =
+            document.createElement("button");
+
+        button.className = "btn-option";
+        button.innerText =
+            `${index + 1}. ${optionText}`;
+
+        button.onclick = () => {
+            if (!isAnswered) {
+                submitAnswer(index + 1, data);
+            }
+        };
+
+        optionsGroup.appendChild(button);
+    });
+}
+
+async function submitAnswer(selected, data) {
+
+    isAnswered = true;
+
+    const response = await fetch("/submit", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            selected: selected
+        })
+    });
+
+    const result = await response.json();
+
+    const expBox =
+        document.getElementById("explanation");
+
+    const expTitle =
+        document.getElementById("exp-title");
+
+    const expText =
+        document.getElementById("exp-text");
+
+    const expExample =
+        document.getElementById("exp-example");
+
+    const correctText =
+        `${data.answer}. ${data.options[data.answer - 1]}`;
+
+    if (result.correct) {
+        expTitle.className =
+            "explanation-title status-correct";
+        expTitle.innerText =
+            "정답입니다!";
+    } else {
+        expTitle.className =
+            "explanation-title status-wrong";
+        expTitle.innerText =
+            "오답입니다.";
+    }
+
+    expText.innerHTML =
+        `정답: <strong>${correctText}</strong>`;
+
+    expExample.innerHTML =
+        `<strong>💡 예문 공부하기</strong><br>
+        ${data.example}<br>
+        <span style="font-size:13px;color:#7a8b83;">
+        ${data.example_ko}
+        </span>`;
+
+    expBox.style.display = "block";
+
+    document.getElementById("next-btn")
+        .onclick = () => {
+
+        if (result.is_last) {
+            location.href = "/result";
+        } else {
+            fetchQuiz();
+        }
+    };
+}
+
+window.onload = fetchQuiz;
+</script>
