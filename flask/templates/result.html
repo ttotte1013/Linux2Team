@@ -112,6 +112,18 @@
             background-color: #0b3c2a;
             color: #ffffff;
         }
+
+        .feedback-content a {
+            display: inline-block;
+            text-decoration: none;
+            color: #004732;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .feedback-content a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -134,8 +146,10 @@
        {% if show_toeic_recommend %}
 <div class="feedback-box">
     <div class="feedback-title">
-        추천 토익 시험 안내
+        지금 토익 응시하러 가기 (아래 링크 클릭)
     </div>
+
+    <br><br>
 
     <div class="feedback-content">
         <a href="{{ toeic_links.receipt }}" target="_blank">
@@ -157,9 +171,39 @@
             </button>
 
             <button class="btn-nav"
+                onclick="location.href='/wrongnote'">
+                오답노트 보기
+            </button>
+
+            <button class="btn-nav"
+                onclick="retryQuiz()">
+                오답 문제 다시 풀기
+            </button>
+
+            <button class="btn-nav"
                 onclick="location.href='/'">
                 메인 홈으로 돌아가기
             </button>
+
         </div>
     </div>
 
+<script>
+async function retryQuiz() {
+
+    const response = await fetch('/retry', {
+        method: 'POST'
+    });
+
+    const data = await response.json();
+
+    if (data.redirect) {
+        window.location.href = data.redirect;
+    } else {
+        alert(data.error || "재시험 오류");
+    }
+}
+</script>
+
+</body>
+</html>

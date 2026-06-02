@@ -292,18 +292,26 @@ def result():
         rec_level = max(level - 1, 1)
         feedback  = f"{score}/{total}점입니다. {rec_level}단계 단어장부터 다시 시작해보세요 📖"
 
+
     # ==================================================================
     # ★ 토익 고사장 및 시험 접수 링크 추천 기능
     # 사용자가 10문제 중 8문제(80%) 이상 맞췄을 때 실전 토익 안내 링크를 제공합니다.
     # ==================================================================
     show_toeic_recommend = False
     toeic_links = {}
+
     if ratio >= 0.8:
         show_toeic_recommend = True
         toeic_links = {
             "receipt": "https://exam.toeic.co.kr/receipt/receiptStep1.php",
             "center": "https://exam.toeic.co.kr/receipt/centerMap.php"
         }
+
+    print("DEBUG RESULT")
+    print("score =", score)
+    print("total =", total)
+    print("ratio =", ratio)
+    print("show =", show_toeic_recommend)
 
     return render_template(
     "result.html",

@@ -1,11 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>오답 노트</title>
+
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #faf8f5;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #004732;
+            text-align: center;
+        }
+
+        .word-card {
+            border: 1px solid #e2ebda;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            background: #faf8f5;
+        }
+
+        .word {
+            font-size: 20px;
+            font-weight: bold;
+            color: #004732;
+        }
+
+        .meaning {
+            margin-top: 8px;
+            color: #466255;
+        }
+
+        .example {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .btn-home {
+            margin-top: 24px;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #004732;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+    </style>
 </head>
+
 <body>
+<div class="container">
+
     <h1>오답 노트</h1>
-    <p>오답 단어 목록이 표시됩니다.</p>
+
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+
+    {% for word in words %}
+        <div class="word-card">
+            <div class="word">
+                {{ word.word }}
+            </div>
+
+            <div class="meaning">
+                뜻: {{ word.meaning }}
+            </div>
+
+            <div class="meaning">
+                동의어: {{ word.synonym }}
+            </div>
+
+            <div class="meaning">
+                반의어: {{ word.antonym }}
+            </div>
+
+            <div class="example">
+                예문: {{ word.example }}
+            </div>
+        </div>
+    {% endfor %}
+
+    <button class="btn-home"
+        onclick="location.href='/'">
+        메인 홈으로 돌아가기
+    </button>
+
+</div>
 </body>
 </html>

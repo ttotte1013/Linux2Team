@@ -117,9 +117,7 @@
     async function selectMode(mode) {
 
         // URL에서 레벨 가져오기
-        const pathParts = window.location.pathname.split("/");
-        const level = Number(pathParts[pathParts.length - 1]);
-
+        const level = Number("{{ level }}");
         console.log("현재 level:", level);
 
         const response = await fetch('/level', {
