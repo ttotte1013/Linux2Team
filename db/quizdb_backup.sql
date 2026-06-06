@@ -23,14 +23,14 @@
 DROP TABLE IF EXISTS `words`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `words` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `level` int(11) DEFAULT NULL,
-  `word` varchar(100) DEFAULT NULL,
-  `meaning` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `synonym` varchar(255) DEFAULT NULL,
-  `antonym` varchar(255) DEFAULT NULL,
-  `example` text DEFAULT NULL,
+CREATE TABLE `words` (                   /*DB 테이블 생성: 테이블명: words*/
+  `id` int(11) NOT NULL AUTO_INCREMENT,  /*id: 문제 번호(총 250개) <- 자동적으로 세도록 함*/
+  `level` int(11) DEFAULT NULL,          /*level: 1~3단계*/
+  `word` varchar(100) DEFAULT NULL,      /*word: 영단어*/
+  `meaning` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,   /*meaning: (한국어) 뜻*/
+  `synonym` varchar(255) DEFAULT NULL,   /*synonym: 동의어*/
+  `antonym` varchar(255) DEFAULT NULL,   /*antonym: 반의어*/
+  `example` text DEFAULT NULL,           /*example: 예문*/
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=256 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -41,7 +41,7 @@ CREATE TABLE `words` (
 
 LOCK TABLES `words` WRITE;
 /*!40000 ALTER TABLE `words` DISABLE KEYS */;
-INSERT INTO `words` VALUES
+INSERT INTO `words` VALUES               /*단어 250개 데이터: (id, level, word, meaning, synonym, antonym, example)*/
 (1,1,'appliance','가전제품','device','furniture','The appliance is energy efficient.'),
 (2,1,'electricity','전기','power','blackout','The house uses solar electricity.'),
 (3,1,'bill','요금','charge','refund','I paid the bill yesterday.'),
