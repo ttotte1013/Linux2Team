@@ -1,11 +1,3 @@
-"""
-=============================================================
-  ※ 팀원 C(채민님) 담당 라우트(/wrongnote, /retry)는 이 파일 하단에
-    제가 섹션 구분선을 두어서 그 부분부터 이어서 작성해주시면 됩니다
-    >> 모두 수정완료 할 때 이 주석은 지우겠습니다!
-=============================================================
-"""
-
 from flask import Flask, request, session, jsonify, render_template, redirect
 import pymysql
 import random
@@ -49,11 +41,14 @@ def index():
 @app.route("/select_mode/<int:level>")
 def select_mode(level):
 
+   # 허용되지 않은 레벨 접근 방지
     if level not in (1, 2, 3):
         return "잘못된 레벨입니다.", 400
-
+      
+    # 선택한 레벨을 세션에 저장
     session["level"] = level
-
+  
+    # 모드 선택 페이지 렌더링
     return render_template(
         "select_mode.html",
         level=level
@@ -62,7 +57,7 @@ def select_mode(level):
 
 @app.route("/quiz_page")
 def quiz_page():
-    return render_template("quiz.html")
+    return render_template("quiz.html")     # 퀴즈 진행 화면 렌더링
 
 @app.route("/select_level/<int:level>")
 def select_level_page(level):
@@ -204,10 +199,10 @@ def get_quiz():
             wrong_rows = cursor.fetchall()
             wrong_texts = [r[wrong_col] for r in wrong_rows]
 
-            options = wrong_texts + [correct_text]
+            options = wrong_texts + [correct_text] # 정답 선택지와 오답 선택지를 섞어 4지선다 생성
             random.shuffle(options)
 
-            answer_index = options.index(correct_text) + 1
+            answer_index = options.index(correct_text) + 1 # 현재 문제의 정답 위치(1~4)를 세션에 저장
 
             example_en = (
                 row["example"].strip().replace("\r", "").replace("\n", "")
@@ -215,7 +210,7 @@ def get_quiz():
                 else ""
             )
 
-            session["used_ids"] = used_ids + [row["id"]]
+            session["used_ids"] = used_ids + [row["id"]] # 이미 출제한 문제 ID 저장 (중복 출제 방지)
             session["current_answer"] = answer_index
             session["current_quiz_id"] = row["id"]
 
@@ -251,7 +246,7 @@ def submit_answer():
         wrong_ids = session.get("wrong_ids", [])
         if session.get("current_quiz_id") not in wrong_ids:
             wrong_ids.append(session.get("current_quiz_id"))
-        session["wrong_ids"] = wrong_ids
+        session["wrong_ids"] = wrong_ids  # 틀린 문제 ID 저장 (오답노트 기능 사용)
 
     current_num          = session["current_num"]
     
@@ -380,7 +375,7 @@ def retry():
     if not wrong_ids:
         return jsonify({"error": "다시 풀 오답이 없습니다."}), 400
 
-    session["is_retry_mode"] = True
+    session["is_retry_mode"] = True # 오답 문제만 다시 풀기 위한 재시험 모드 활성화
     session["retry_pool"]    = list(wrong_ids)      
     random.shuffle(session["retry_pool"])          
     session["retry_total"]   = len(wrong_ids)       
@@ -449,7 +444,10 @@ def get_retry_quiz():
         "example_ko" : ""
     })
 
-
+# Flask 웹 서버 실행
+# host="0.0.0.0" : 외부 접속 허용 (Docker 컨테이너에서 접근 가능)
+# port=5000      : Flask 서버 포트
+# debug=True     : 코드 수정 시 자동 재시작 및 디버그 정보 출력
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
 
