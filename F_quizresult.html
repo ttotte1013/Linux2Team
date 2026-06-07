@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOEIC Word Quiz - Result</title>
     <style>
-        /* Base Reset & Layout */
+        /* 기본 초기화 및 전체 레이아웃 설정 */
         body {
             margin: 0;
             padding: 0;
@@ -18,7 +18,7 @@
             min-height: 100vh;
         }
 
-        /* Container Standard */
+        /* 결과 페이지 컨테이너 영역 */
         .result-container {
             background-color: #ffffff;
             padding: 40px;
@@ -29,7 +29,7 @@
             text-align: center;
         }
 
-        /* Typography */
+        /* 텍스트 스타일(제목, 점수, 라벨) */
         h1 {
             font-size: 24px;
             font-weight: 800;
@@ -50,7 +50,7 @@
             margin-bottom: 32px;
         }
 
-        /* Feedback Section General */
+        /* 피드백 및 안내 박스 스타일 */
         .feedback-box {
             background-color: #faf8f5;
             border-left: 4px solid #004732;
@@ -73,7 +73,7 @@
             line-height: 1.5;
         }
 
-        /* Component: Navigation Buttons */
+        /* 내비게이션 버튼 그룹 레이아웃 */
         .button-group {
             display: flex;
             flex-direction: column;
@@ -81,6 +81,7 @@
             margin-top: 32px;
         }
 
+        /* 일반 내비게이션 버튼 스타일 */
         .btn-nav {
             background-color: #ffffff;
             color: #2c3a1a;
@@ -94,6 +95,7 @@
             text-align: center;
         }
 
+        /* 버튼 호버 효과 */
         .btn-nav:hover {
             background-color: #edf5ed;
             border-color: #a7bfa4;
@@ -101,7 +103,7 @@
             transform: translateY(-2px); 
         }
 
-        /* Primary Action Button Modification */
+        /* 주요 버튼(Primary) 강조 스타일 */
         .btn-primary {
             background-color: #004732;
             color: #ffffff;
@@ -118,20 +120,24 @@
 
     <div class="result-container">
         <h1>퀴즈 결과</h1>
-        
+
+        <!-- 점수 표시 영역 -->
         <div id="score" class="score-display">0 / 100</div>
         <div class="score-label">SCORE</div>
 
+        <!-- 단어장 추천 및 피드백 박스 -->
         <div class="feedback-box">
             <div class="feedback-title">단어장 추천 및 피드백</div>
             <div id="recommendation-text" class="feedback-content">결과를 계산 중입니다.</div>
         </div>
 
+        <!-- 추천 시험장 안내 박스(평소에는 숨김) -->
         <div id="test-center-box" class="feedback-box" style="display: none;">
             <div class="feedback-title">추천 토익 시험장 안내</div>
             <div id="test-center-text" class="feedback-content"></div>
         </div>
 
+        <!-- 하단 내비게이션 버튼 -->
         <div class="button-group">
             <button class="btn-nav btn-primary" onclick="navigateTo('select_mode.html')">다른 퀴즈 방식 선택하기</button>
             <button class="btn-nav" onclick="navigateTo('index.html')">메인 홈으로 돌아가기</button>
