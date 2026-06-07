@@ -2,124 +2,155 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <!-- 모바일 화면 대응 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 페이지 제목 -->
     <title>TOEIC WORD QUIZ - 모드 선택</title>
+
     <style>
-        /* 상단 스타일 구역 */
+        /* =========================
+           전체 페이지 스타일
+        ========================= */
         body {
-            background-color: #faf8f5; /* 미색 */
+            background-color: #faf8f5;
             font-family: 'Malgun Gothic', sans-serif;
+
+            /* 화면 중앙 정렬 */
             display: flex;
             justify-content: center;
             align-items: center;
+
             height: 100vh;
             margin: 0;
         }
 
+        /* 메인 카드 영역 */
         .main-container {
             background-color: #ffffff;
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             text-align: center;
-            width: 420px; /* 서브타이틀이 들어가서 가로 폭을 살짝 넓히기 */
+            width: 420px;
         }
 
+        /* 제목 */
         h1 {
-            color: #00462a; /* 타이틀 글자색 */
+            color: #00462a;
             font-size: 28px;
             margin-bottom: 8px;
         }
 
+        /* 부제목 */
         .subtitle {
             font-size: 15px;
-            color: #4d6b5f; /* 서브타이틀 글자색 */
+            color: #4d6b5f;
             margin-bottom: 32px;
         }
 
+        /* 버튼들을 세로로 배치 */
         .button-group {
             display: flex;
             flex-direction: column;
-            gap: 14px; /* 버튼 사이 간격 살짝 넓힘 */
+            gap: 14px;
         }
 
-        /* 버튼 스타일 */
+        /* =========================
+           모드 선택 버튼 스타일
+        ========================= */
         .btn-mode {
             background-color: #ffffff;
             border: 1px solid #e2ebda;
-            padding: 18px 24px; /* 위아래 여백을 줘서 더 풍성하게 */
-            border-radius: 12px; /* 조금 더 둥글둥글 귀엽게 */
+            padding: 18px 24px;
+            border-radius: 12px;
+
             cursor: pointer;
             text-align: left;
-            
-            /* 버튼 내부 내용들을 세로로 정렬 */
+
+            /* 버튼 내부를 세로 정렬 */
             display: flex;
             flex-direction: column;
-            gap: 4px; /* 큰 글씨와 작은 글씨 사이의 간격 */
-            
+            gap: 4px;
+
             transition: all 0.2s ease-in-out;
         }
 
-        /* 큰 글씨 (메인 타이틀) */
+        /* 버튼 제목 */
         .btn-mode strong {
             color: #4a5632;
             font-size: 17px;
             font-weight: 700;
         }
 
-        /* 작은 글씨 (서브 타이틀) */
+        /* 버튼 설명 */
         .btn-mode span {
             color: #5a6b51;
             font-size: 13px;
             font-weight: 400;
         }
 
-        /* 마우스 오버 효과 */
+        /* 마우스 올렸을 때 */
         .btn-mode:hover {
             background-color: #edf5ed;
             border-color: #a7bfa4;
-            transform: translateY(-2px); /* 2px 들리게 */
+            transform: translateY(-2px);
         }
     </style>
 </head>
 
 <body>
+
+    <!-- 모드 선택 화면 -->
     <div class="main-container">
+
         <h1>퀴즈 모드 선택</h1>
         <p class="subtitle">원하는 시험 방식을 선택하세요.</p>
 
         <div class="button-group">
+
+            <!-- 영 → 한 퀴즈 -->
             <button class="btn-mode"
-             onclick="selectMode('eng_ko')">
+                    onclick="selectMode('eng_ko')">
                 <strong>영 → 한</strong>
                 <span>영어 단어를 보고 알맞은 한글 뜻을 맞춥니다.</span>
             </button>
-            
+
+            <!-- 한 → 영 퀴즈 -->
             <button class="btn-mode"
-             onclick="selectMode('ko_eng')">
+                    onclick="selectMode('ko_eng')">
                 <strong>한 → 영</strong>
-                <span>한글 뜻을 보고 올바른 스펠링의 영단어를 찾습니다.</span>
+                <span>한글 뜻을 보고 올바른 영단어를 찾습니다.</span>
             </button>
-            
+
+            <!-- 동의어 퀴즈 -->
             <button class="btn-mode"
-             onclick="selectMode('synonym')">
+                    onclick="selectMode('synonym')">
                 <strong>영문 동의어</strong>
-                <span>제시된 단어와 의미가 가장 가까운 유의어를 고릅니다.</span>
+                <span>제시된 단어와 의미가 가장 가까운 단어를 고릅니다.</span>
             </button>
-            
+
+            <!-- 반의어 퀴즈 -->
             <button class="btn-mode"
-            onclick="selectMode('antonym')">
+                    onclick="selectMode('antonym')">
                 <strong>영문 반의어</strong>
-                <span>제시된 단어와 정반대의 뜻을 가진 단어를 찾습니다.</span>
+                <span>제시된 단어와 반대 의미의 단어를 찾습니다.</span>
             </button>
+
         </div>
     </div>
+
 <script>
+
+    /* 사용자가 선택한 퀴즈 모드를 서버에 전달 */
     async function selectMode(mode) {
 
-        // URL에서 레벨 가져오기
+        /* Flask(Jinja)에서 전달받은 레벨 값 */
         const level = Number("{{ level }}");
+
         console.log("현재 level:", level);
 
+        /* 선택한 모드와 레벨을 서버로 전송 */
         const response = await fetch('/level', {
             method: 'POST',
             headers: {
@@ -131,16 +162,19 @@
             })
         });
 
+        /* 서버 응답(JSON) 받기 */
         const data = await response.json();
 
         console.log(data);
 
+        /* 서버가 redirect 주소를 주면 이동 */
         if (data.redirect) {
             window.location.href = data.redirect;
         } else {
             alert(data.error || "오류 발생");
         }
     }
+
 </script>
 
 </body>
