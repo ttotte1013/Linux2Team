@@ -2,9 +2,15 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+
+    <!-- 페이지 제목 -->
     <title>오답 노트</title>
 
     <style>
+
+        /* =========================
+           전체 페이지 스타일
+        ========================= */
         body {
             font-family: 'Pretendard', sans-serif;
             background: #faf8f5;
@@ -12,6 +18,7 @@
             padding: 40px;
         }
 
+        /* 오답노트 메인 컨테이너 */
         .container {
             max-width: 700px;
             margin: auto;
@@ -21,11 +28,13 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
 
+        /* 페이지 제목 */
         h1 {
             color: #004732;
             text-align: center;
         }
 
+        /* 오답 단어 카드 */
         .word-card {
             border: 1px solid #e2ebda;
             border-radius: 12px;
@@ -34,23 +43,27 @@
             background: #faf8f5;
         }
 
+        /* 단어 표시 */
         .word {
             font-size: 20px;
             font-weight: bold;
             color: #004732;
         }
 
+        /* 뜻, 동의어, 반의어 표시 */
         .meaning {
             margin-top: 8px;
             color: #466255;
         }
 
+        /* 예문 표시 */
         .example {
             margin-top: 8px;
             font-size: 14px;
             color: #666;
         }
 
+        /* 홈으로 이동 버튼 */
         .btn-home {
             margin-top: 24px;
             width: 100%;
@@ -62,47 +75,63 @@
             font-size: 15px;
             cursor: pointer;
         }
+
     </style>
 </head>
 
 <body>
+
 <div class="container">
 
+    <!-- 오답노트 제목 -->
     <h1>오답 노트</h1>
 
+    <!-- 오답이 없을 경우 메시지 출력 -->
     {% if message %}
         <p>{{ message }}</p>
     {% endif %}
 
+    <!-- 오답 단어 목록 출력 -->
     {% for word in words %}
+
         <div class="word-card">
+
+            <!-- 단어 -->
             <div class="word">
                 {{ word.word }}
             </div>
 
+            <!-- 단어 뜻 -->
             <div class="meaning">
                 뜻: {{ word.meaning }}
             </div>
 
+            <!-- 동의어 -->
             <div class="meaning">
                 동의어: {{ word.synonym }}
             </div>
 
+            <!-- 반의어 -->
             <div class="meaning">
                 반의어: {{ word.antonym }}
             </div>
 
+            <!-- 예문 -->
             <div class="example">
                 예문: {{ word.example }}
             </div>
+
         </div>
+
     {% endfor %}
 
+    <!-- 메인 화면으로 이동 -->
     <button class="btn-home"
         onclick="location.href='/'">
         메인 홈으로 돌아가기
     </button>
 
 </div>
+
 </body>
 </html>
