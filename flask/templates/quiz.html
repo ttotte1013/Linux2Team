@@ -1,29 +1,50 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+
+<!-- 문자 인코딩 설정 -->
 <meta charset="UTF-8">
+
+<!-- 모바일 화면 대응 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 웹 페이지 제목 -->
 <title>TOEIC WORD QUIZ</title>
 
 <style>
+
+/* =========================
+   전체 페이지 설정
+   ========================= */
 body{
     margin:0;
     font-family:'Pretendard','Noto Sans KR',sans-serif;
+
+    /* 배경색 */
     background:#faf8f5;
+
+    /* 중앙 정렬 */
     display:flex;
     justify-content:center;
     align-items:center;
+
+    /* 최소 높이 */
     min-height:100vh;
 }
 
+/* =========================
+   퀴즈 메인 컨테이너
+   ========================= */
 .quiz-container{
     background:#fff;
     width:500px;
     padding:40px;
+
     border-radius:20px;
     box-shadow:0 4px 20px rgba(0,0,0,0.05);
 }
 
+/* 현재 문제 진행 상황 표시 */
 .progress{
     font-size:14px;
     font-weight:700;
@@ -31,6 +52,7 @@ body{
     margin-bottom:30px;
 }
 
+/* 문제 단어 표시 */
 #question{
     text-align:center;
     font-size:42px;
@@ -38,127 +60,171 @@ body{
     margin-bottom:40px;
 }
 
+/* 선택지 영역 */
 #options{
     display:flex;
     flex-direction:column;
     gap:14px;
 }
 
+/* 선택지 버튼 */
 .option-btn{
     background:white;
     border:1px solid #e5e5e5;
     border-radius:16px;
+
     padding:22px;
+
     text-align:left;
     font-size:20px;
     font-weight:600;
+
     cursor:pointer;
+
     transition:0.2s;
 }
 
+/* 선택지 버튼 마우스 오버 */
 .option-btn:hover{
     background:#edf5ed;
     transform:translateY(-2px);
 }
 
+/* =========================
+   정답 결과 영역
+   ========================= */
 .result-box{
     margin-top:30px;
     padding:22px;
+
     border-left:6px solid #004732;
     background:#faf8f5;
+
     border-radius:10px;
+
+    /* 처음에는 숨김 */
     display:none;
 }
 
+/* 정답/오답 제목 */
 .result-title{
     font-size:28px;
     font-weight:700;
     color:#004732;
 }
 
+/* 정답 텍스트 */
 .answer-text{
     margin-top:10px;
     font-size:22px;
     font-weight:600;
 }
 
+/* 예문 제목 */
 .example-title{
     margin-top:20px;
     font-weight:700;
 }
 
+/* 예문 내용 */
 .example-text{
     margin-top:10px;
     color:#444;
     line-height:1.7;
 }
 
+/* 다음 문제 버튼 */
 .next-btn{
     margin-top:25px;
+
     width:100%;
     padding:18px;
+
     border:none;
     border-radius:14px;
+
     background:#004732;
     color:white;
+
     font-size:18px;
     font-weight:700;
+
     cursor:pointer;
 }
 
+/* 다음 문제 버튼 마우스 오버 */
 .next-btn:hover{
     background:#0b3c2a;
 }
+
 </style>
 </head>
 
 <body>
 
+<!-- 퀴즈 전체 영역 -->
 <div class="quiz-container">
 
+    <!-- 현재 문제 번호 표시 -->
     <div class="progress" id="progress">
         QUIZ 1 / 10
     </div>
 
+    <!-- 문제 단어 출력 -->
     <h2 id="question">
         문제 불러오는 중...
     </h2>
 
+    <!-- 선택지 출력 영역 -->
     <div id="options"></div>
 
-    <!-- 정답/예문 표시 영역 -->
+    <!-- 정답 및 예문 표시 영역 -->
     <div class="result-box" id="resultBox">
 
+        <!-- 정답/오답 표시 -->
         <div class="result-title" id="resultTitle">
         </div>
 
+        <!-- 정답 출력 -->
         <div class="answer-text" id="answerText">
         </div>
 
+        <!-- 예문 제목 -->
         <div class="example-title">
             💡 예문 공부하기
         </div>
 
+        <!-- 예문 출력 -->
         <div class="example-text" id="exampleText">
         </div>
 
+        <!-- 다음 문제 버튼 -->
         <button class="next-btn" onclick="nextQuiz()">
             NEXT →
         </button>
+
     </div>
 
 </div>
 
 <script>
 
+// 현재 퀴즈 데이터 저장
 let currentQuizData = null;
+
+// 마지막 문제 여부 저장
 let isLastQuestion = false;
 
+/* =========================
+   문제 불러오기
+   ========================= */
 async function loadQuiz(){
 
+    // Flask 서버의 /quiz API 호출
     const res = await fetch("/quiz");
     const data = await res.json();
 
+    // 퀴즈 종료 시 결과 페이지 이동
     if(data.redirect){
         location.href = data.redirect;
         return;
@@ -166,31 +232,43 @@ async function loadQuiz(){
 
     currentQuizData = data;
 
+    // 진행 상황 표시
     document.getElementById("progress").innerText =
         `QUIZ ${data.current_num} / ${data.total_num}`;
 
+    // 문제 출력
     document.getElementById("question").innerText =
         data.question;
 
+    // 결과창 숨기기
     document.getElementById("resultBox").style.display = "none";
 
+    // 선택지 영역 초기화
     const optionsDiv = document.getElementById("options");
     optionsDiv.innerHTML = "";
 
+    // 선택지 버튼 생성
     data.options.forEach((opt, idx)=>{
 
         const btn = document.createElement("button");
+
         btn.className = "option-btn";
+
         btn.innerText = `${idx+1}. ${opt}`;
 
+        // 버튼 클릭 시 답안 제출
         btn.onclick = ()=>submitAnswer(idx+1);
 
         optionsDiv.appendChild(btn);
     });
 }
 
+/* =========================
+   답안 제출
+   ========================= */
 async function submitAnswer(selected){
 
+    // 선택한 답 서버로 전송
     const result = await fetch("/submit",{
         method:"POST",
         headers:{
@@ -203,25 +281,29 @@ async function submitAnswer(selected){
 
     const data = await result.json();
 
+    // 마지막 문제 여부 저장
     isLastQuestion = data.is_last;
 
-    // 선택지 버튼 비활성화
+    // 답안 선택 후 버튼 비활성화
     document.querySelectorAll(".option-btn")
         .forEach(btn => btn.disabled = true);
 
     const resultBox =
         document.getElementById("resultBox");
 
+    // 결과창 표시
     resultBox.style.display = "block";
 
+    // 정답 텍스트 추출
     const correctAnswer =
         currentQuizData.options[
             currentQuizData.answer - 1
         ];
 
     const resultTitle =
-    document.getElementById("resultTitle");
+        document.getElementById("resultTitle");
 
+    // 정답 여부 표시
     if(data.correct){
 
         resultTitle.innerText = "정답입니다!";
@@ -233,24 +315,34 @@ async function submitAnswer(selected){
         resultTitle.style.color = "#d32f2f";
     }
 
+    // 정답 출력
     document.getElementById("answerText")
         .innerText =
         `정답: ${currentQuizData.answer}. ${correctAnswer}`;
 
+    // 예문 출력
     document.getElementById("exampleText")
         .innerHTML =
         currentQuizData.example || "예문 없음";
 }
 
+/* =========================
+   다음 문제 이동
+   ========================= */
 function nextQuiz(){
 
+    // 마지막 문제라면 결과 페이지 이동
     if(isLastQuestion){
         location.href="/result";
-    }else{
+    }
+
+    // 아니면 다음 문제 로드
+    else{
         loadQuiz();
     }
 }
 
+/* 페이지 로드 시 첫 문제 불러오기 */
 loadQuiz();
 
 </script>
