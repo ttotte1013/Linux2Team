@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- 문자 인코딩 설정 -->
     <meta charset="UTF-8">
+
+    <!-- 모바일 화면 대응 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 브라우저 탭 제목 -->
     <title>TOEIC Word Quiz - Result</title>
+
     <style>
-        /* Base Reset & Layout */
+        /* =========================
+           전체 페이지 레이아웃
+        ========================= */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-            background-color: #faf8f5; 
-            color: #2c3a1a; 
+            background-color: #faf8f5;
+            color: #2c3a1a;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
 
-        /* Container Standard */
+        /* =========================
+           결과 화면 컨테이너
+        ========================= */
         .result-container {
             background-color: #ffffff;
             padding: 40px;
@@ -29,14 +39,17 @@
             text-align: center;
         }
 
-        /* Typography */
+        /* =========================
+           제목 스타일
+        ========================= */
         h1 {
             font-size: 24px;
             font-weight: 800;
-            color: #004732; 
+            color: #004732;
             margin-bottom: 24px;
         }
 
+        /* 점수 표시 */
         .score-display {
             font-size: 48px;
             font-weight: 800;
@@ -44,13 +57,16 @@
             margin-bottom: 8px;
         }
 
+        /* SCORE 텍스트 */
         .score-label {
             font-size: 16px;
             color: #466255;
             margin-bottom: 32px;
         }
 
-        /* Feedback Section General */
+        /* =========================
+           피드백 박스
+        ========================= */
         .feedback-box {
             background-color: #faf8f5;
             border-left: 4px solid #004732;
@@ -60,6 +76,7 @@
             text-align: left;
         }
 
+        /* 피드백 제목 */
         .feedback-title {
             font-size: 15px;
             font-weight: 700;
@@ -67,13 +84,16 @@
             color: #004732;
         }
 
+        /* 피드백 내용 */
         .feedback-content {
             font-size: 14px;
             color: #466255;
             line-height: 1.5;
         }
 
-        /* Component: Navigation Buttons */
+        /* =========================
+           버튼 그룹
+        ========================= */
         .button-group {
             display: flex;
             flex-direction: column;
@@ -81,11 +101,12 @@
             margin-top: 32px;
         }
 
+        /* 공통 버튼 */
         .btn-nav {
             background-color: #ffffff;
             color: #2c3a1a;
-            border: 1px solid #e2ebda; 
-            padding: 14px 20px; 
+            border: 1px solid #e2ebda;
+            padding: 14px 20px;
             font-size: 15px;
             font-weight: 600;
             border-radius: 12px;
@@ -94,14 +115,15 @@
             text-align: center;
         }
 
+        /* 버튼 마우스 오버 */
         .btn-nav:hover {
             background-color: #edf5ed;
             border-color: #a7bfa4;
             color: #004732;
-            transform: translateY(-2px); 
+            transform: translateY(-2px);
         }
 
-        /* Primary Action Button Modification */
+        /* 주요 버튼 */
         .btn-primary {
             background-color: #004732;
             color: #ffffff;
@@ -113,6 +135,7 @@
             color: #ffffff;
         }
 
+        /* 링크 스타일 */
         .feedback-content a {
             display: inline-block;
             text-decoration: none;
@@ -126,60 +149,85 @@
         }
     </style>
 </head>
+
 <body>
 
+    <!-- 결과 화면 전체 영역 -->
     <div class="result-container">
+
+        <!-- 결과 제목 -->
         <h1>퀴즈 결과</h1>
-        
+
+        <!-- Flask에서 전달받은 점수 출력 -->
         <div id="score" class="score-display">
             {{ score }} / {{ total }}
         </div>
+
+        <!-- 점수 라벨 -->
         <div class="score-label">SCORE</div>
 
+        <!-- 학습 피드백 출력 -->
         <div class="feedback-box">
-            <div class="feedback-title">단어장 추천 및 피드백</div>
+            <div class="feedback-title">
+                단어장 추천 및 피드백
+            </div>
+
             <div id="recommendation-text" class="feedback-content">
                 {{ feedback }}
             </div>
         </div>
 
-       {% if show_toeic_recommend %}
-<div class="feedback-box">
-    <div class="feedback-title">
-        지금 토익 응시하러 가기 (아래 링크 클릭)
-    </div>
+        <!-- 일정 점수 이상일 경우 토익 링크 출력 -->
+        {% if show_toeic_recommend %}
+        <div class="feedback-box">
 
-    <br><br>
+            <div class="feedback-title">
+                지금 토익 응시하러 가기 (아래 링크 클릭)
+            </div>
 
-    <div class="feedback-content">
-        <a href="{{ toeic_links.receipt }}" target="_blank">
-            토익 접수하기
-        </a>
-        <br><br>
+            <br><br>
 
-        <a href="{{ toeic_links.center }}" target="_blank">
-            시험장 찾기
-        </a>
-    </div>
-</div>
-{% endif %}
+            <div class="feedback-content">
 
+                <!-- 토익 접수 링크 -->
+                <a href="{{ toeic_links.receipt }}" target="_blank">
+                    토익 접수하기
+                </a>
+
+                <br><br>
+
+                <!-- 시험장 조회 링크 -->
+                <a href="{{ toeic_links.center }}" target="_blank">
+                    시험장 찾기
+                </a>
+
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- 메뉴 버튼 영역 -->
         <div class="button-group">
+
+            <!-- 퀴즈 모드 선택 화면으로 이동 -->
             <button class="btn-nav btn-primary"
                 onclick="location.href='/select_mode/{{ level }}'">
                 다른 퀴즈 방식 선택하기
             </button>
 
+            <!-- 오답노트 페이지 이동 -->
             <button class="btn-nav"
                 onclick="location.href='/wrongnote'">
                 오답노트 보기
             </button>
 
+            <!-- 틀린 문제만 다시 풀기 -->
             <button class="btn-nav"
                 onclick="retryQuiz()">
                 오답 문제 다시 풀기
             </button>
 
+            <!-- 메인 페이지 이동 -->
             <button class="btn-nav"
                 onclick="location.href='/'">
                 메인 홈으로 돌아가기
@@ -189,20 +237,27 @@
     </div>
 
 <script>
-async function retryQuiz() {
 
-    const response = await fetch('/retry', {
-        method: 'POST'
-    });
+    // 오답 문제 재도전 기능
+    async function retryQuiz() {
 
-    const data = await response.json();
+        // Flask 서버의 /retry API 호출
+        const response = await fetch('/retry', {
+            method: 'POST'
+        });
 
-    if (data.redirect) {
-        window.location.href = data.redirect;
-    } else {
-        alert(data.error || "재시험 오류");
+        // JSON 데이터 받기
+        const data = await response.json();
+
+        // 재시험 가능 시 퀴즈 화면으로 이동
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        }
+        else {
+            alert(data.error || "재시험 오류");
+        }
     }
-}
+
 </script>
 
 </body>
