@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>TOEIC WORD QUIZ - QUIZ</title>
     <style>
+        /* 기본 페이지 및 전체 요소 정렬 설정 */
         body {
             background-color: #faf8f5; 
             font-family: 'Malgun Gothic', sans-serif;
@@ -14,6 +15,7 @@
             margin: 0;
         }
 
+        /* 퀴즈 전체 영역 스타일 */
         .quiz-container {
             background-color: #ffffff;
             padding: 40px;
@@ -23,6 +25,7 @@
             position: relative;
         }
 
+        /* 현재 퀴즈 진행 상태 표시 */
         .quiz-progress {
             font-size: 14px;
             color: #466255; 
@@ -32,6 +35,7 @@
             letter-spacing: 1px;
         }
 
+        /* 퀴즈 문제 텍스트 스타일 */
         .quiz-question {
             color: #004732; 
             font-size: 32px; 
@@ -41,6 +45,7 @@
             word-wrap: break-word;
         }
 
+        /* 선택지 버튼 그룹 레이아웃 */
         .options-group {
             display: flex;
             flex-direction: column;
@@ -48,6 +53,7 @@
             margin-bottom: 24px;
         }
 
+        /* 각 선택지 버튼 기본 스타일 */
         .btn-option {
             background-color: #ffffff;
             border: 1px solid #e2ebda;
@@ -63,33 +69,36 @@
             box-sizing: border-box;
         }
 
+        /* 버튼 호버 시 효과 */
         .btn-option:hover {
             background-color: #edf5ed;
             border-color: #a7bfa4;
             transform: translateY(-2px); 
         }
 
-        /* 💡 정답 및 예문 해설 박스 */
+        /* 정답 및 해설 표시 영역 */
         .explanation-box {
-            display: none; /* 평소에는 숨김 */
-            background-color: #faf8f5; /* 미색 배경 */
-            border-left: 4px solid #004732; /* 그린 포인트 선 */
+            display: none; /* 평소에는 숨김 처리 */
+            background-color: #faf8f5;
+            border-left: 4px solid #004732;
             padding: 16px;
             border-radius: 4px 12px 12px 4px;
             margin-bottom: 24px;
             text-align: left;
         }
 
+        /* 해설 제목 영역 */
         .explanation-title {
             font-size: 15px;
             font-weight: 700;
             margin-bottom: 6px;
         }
 
-        /* 정답/오답 텍스트 컬러 분기 */
+        /* 정답/오답 결과에 따른 텍스트 색상 */
         .status-correct { color: #004732; }
-        .status-wrong { color: #b91c1c; } /* 오답 메시지: 다크 레드 */
+        .status-wrong { color: #b91c1c; }
 
+        /* 예문 및 해석 영역 스타일 */
         .explanation-example {
             font-size: 14px;
             color: #466255;
@@ -99,11 +108,13 @@
             border-top: 1px dashed #e2ebda;
         }
 
+        /* 하단 푸터 영역 (다음 버튼 위치) */
         .quiz-footer {
             display: flex;
             justify-content: flex-end; 
         }
 
+        /* 다음 문제 이동 버튼 스타일 */
         .btn-next {
             background-color: #004732; 
             color: #ffffff;
@@ -142,7 +153,7 @@
     </div>
 
     <script>
-        // 백엔드에서 예문(example)과 예문해석(example_ko)까지 포함해 넘겨줄 정석 데이터 포맷
+        // 퀴즈 데이터 예시 (백엔드에서 데이터가 들어올 형식)
         const mockData = {
             quiz_id: 3,
             current_num: 1,
@@ -154,8 +165,9 @@
             example_ko: "그 프로젝트는 상당한 양의 시간을 필요로 할 것이다."
         };
 
-        let isAnswered = false; // 중복 클릭 방지 플래그
+        let isAnswered = false; // 정답 선택 여부 확인을 위한 플래그 (중복 클릭 방지)
 
+        // 퀴즈 화면 로드 및 데이터 바인딩 함수
         function loadQuiz(data) {
             isAnswered = false;
             document.getElementById("explanation").style.display = "none"; // 해설 박스 초기화
@@ -166,6 +178,7 @@
             const optionsGroup = document.getElementById("options");
             optionsGroup.innerHTML = ""; 
 
+            // 선택지 버튼 생성
             data.options.forEach((optionText, index) => {
                 const button = document.createElement("button");
                 button.className = "btn-option";
@@ -181,7 +194,7 @@
             });
         }
 
-        // 💡 정답 및 오답 판별 후 해설 출력 로직
+        // 선택지 클릭 시 정답 여부 판별 및 해설 화면 출력
         function handleOptionClick(selectedIndex, data) {
             isAnswered = true;
             const expBox = document.getElementById("explanation");
@@ -191,6 +204,7 @@
 
             const correctAnswerText = `${data.answer}. ${data.options[data.answer - 1]}`;
 
+            // 정답/오답에 따른 결과 메시지 설정
             if (selectedIndex === data.answer) {
                 // 정답일 때
                 expTitle.className = "explanation-title status-correct";
@@ -201,14 +215,15 @@
                 expTitle.innerText = "오답입니다.";
             }
 
-            // 정답 정보 및 예문 바인딩
+            // 정답 정보 및 예문 내용 바인딩
             expText.innerHTML = `정답: <strong>${correctAnswerText}</strong>`;
             expExample.innerHTML = `<strong>💡 예문 공부하기</strong><br>${data.example}<br><span style="font-size: 13px; color: #7a8b83;">${data.example_ko}</span>`;
             
-            // 해설 박스 노출
+            // 결과 화면 표시
             expBox.style.display = "block";
         }
 
+        // 페이지 로드 시 퀴즈 초기화
         window.onload = function() {
             loadQuiz(mockData);
         };
