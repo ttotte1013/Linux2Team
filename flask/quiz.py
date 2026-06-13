@@ -93,7 +93,7 @@ def select_level():
     session["current_num"]  = 1           # 현재 문제 번호
     session["score"]        = 0           # 맞은 개수
     session["used_ids"]     = []          # 이미 출제된 단어 id 목록
-    session["wrong_ids"]    = []          # 오답 단어 id 목록 (팀원 C 사용)
+    session["wrong_ids"]    = []          # 오답 단어 id 목록 
     session["is_retry_mode"] = False       # 재시험 모드 플래그 초기화
 
     return jsonify({"redirect": "/quiz_page"})
